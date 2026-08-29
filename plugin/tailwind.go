@@ -6,6 +6,8 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+
+	"github.com/krewire/libs/core"
 )
 
 func init() {
@@ -23,6 +25,10 @@ type Tailwind struct{}
 func (t *Tailwind) Name() string { return "tailwind" }
 
 func (t *Tailwind) Aliases() []string { return []string{"twcss", "tailwindcss"} }
+
+func (t *Tailwind) Version() core.Version {
+	return core.MustParseVersion("3.4.0") // Tailwind CSS v3.4.0
+}
 
 func (t *Tailwind) Detect(root string) bool {
 	for _, name := range []string{"tailwind.config.js", "tailwind.config.cjs", "tailwind.config.ts"} {

@@ -1,6 +1,10 @@
 package plugin
 
-import "strings"
+import (
+	"strings"
+
+	"github.com/krewire/libs/core"
+)
 
 // Plugin is a site build extension. It is detected by presence of its
 // config files at the project root (e.g., tailwind.config.js) and runs
@@ -22,6 +26,8 @@ type Plugin interface {
 	// Build runs the plugin, writing its output into outDir (the site output
 	// directory, e.g., site/). It may read config and source files from root.
 	Build(root, outDir string) error
+	// Version returns the plugin's version for compatibility checking.
+	Version() core.Version
 }
 
 // Installer is the optional install/uninstall contract for a plugin. A
@@ -68,6 +74,30 @@ func Find(name string) Plugin {
 // FindInstaller returns the Installer for name if the plugin implements it.
 func FindInstaller(name string) Installer {
 	p := Find(name)
+	if p == nil {
+		return nil
+	}
+	ins, _ := p.(Installer)
+	return ins
+}
+
+// FindByVersion returns the plugin whose Name or Aliases match name and
+// whose version satisfies the required version per semver caret semantics.
+func FindByVersion(name string, required core.Version) Plugin {
+	p := Find(name)
+	if p == nil {
+		return nil
+	}
+	if !p.Version().IsCompatible(required) {
+		return nil
+	}
+	return p
+}
+
+// FindInstallerByVersion returns the Installer for name if the plugin
+// implements it and satisfies the required version.
+func FindInstallerByVersion(name string, required core.Version) Installer {
+	p := FindByVersion(name, required)
 	if p == nil {
 		return nil
 	}

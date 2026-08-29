@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/krewire/libs/core"
 	"github.com/krewire/ship/plugin"
 )
 
@@ -20,6 +21,21 @@ type Resolved struct {
 	Spec      Spec
 	Installer Installer
 	Kind      string // plugin|npm|gomod
+}
+
+// EffectiveVersion returns the version string to use for installation,
+// using core.Version compatibility semantics.
+func (r *Resolved) EffectiveVersion() string {
+	if r.Spec.IsLatest() {
+		return "latest"
+	}
+	return r.Spec.RawVer
+}
+
+// SatisfiesRequired reports whether the resolved package's version satisfies
+// the required version per semver caret semantics.
+func (r *Resolved) SatisfiesRequired(required core.Version) bool {
+	return r.Spec.Satisfies(required)
 }
 
 // Resolver resolves a Spec to an Installer. It returns nil if it cannot handle the spec.
